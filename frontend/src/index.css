@@ -1,0 +1,49 @@
+/* src/index.css - Global tweaks & cinema custom styling */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Movie Card Smooth Transitions */
+.movie-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border-radius: 10px;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Seat Buttons */
+.seat-btn {
+  font-weight: bold;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+
+.seat-btn:hover:not(:disabled) {
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.seat-btn.disabled, .seat-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Custom scrollbars and table styles */
+.table th {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
