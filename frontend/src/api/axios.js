@@ -1,9 +1,9 @@
 // src/api/axios.js - Centralized Axios instance with JWT interceptor
 import axios from 'axios';
 
-// Create Axios instance with backend base URL
+// Create Axios instance with backend base URL (configurable via VITE_API_URL for deployment)
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
