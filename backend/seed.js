@@ -12,14 +12,12 @@ const Movie = require('./models/Movie');
 const Showtime = require('./models/Showtime');
 const Booking = require('./models/Booking');
 
-// Helper to get formatted date string (YYYY-MM-DD) for N days in the future
+// Date string (YYYY-MM-DD) in a fixed timezone, N days from now.
+// A fixed timezone avoids a UTC server being a day behind India.
+const TZ = process.env.APP_TIMEZONE || 'Asia/Kolkata';
 const getFutureDate = (daysAhead) => {
-  const date = new Date();
-  date.setDate(date.getDate() + daysAhead);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const d = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000);
+  return d.toLocaleDateString('en-CA', { timeZone: TZ }); // en-CA gives YYYY-MM-DD
 };
 
 const seedData = async () => {
@@ -120,7 +118,7 @@ const seedData = async () => {
     const createdMovies = await Movie.insertMany(sampleMovies);
     console.log(`Movies seeded: ${createdMovies.length} movies inserted`);
 
-    // 5. Create 2-3 Showtimes per Movie across the next 7 days
+    // 5. Create showtimes: EVERY day for the next 7 days, 3 shows per day per movie
     const theaters = ['PVR Cinemas - Screen 1', 'INOX Luxe - Audi 2', 'Cinepolis - IMAX 3D'];
     const timeSlots = ['10:30 AM', '02:15 PM', '06:45 PM', '09:30 PM'];
     const prices = [250, 300, 350, 400];
@@ -128,31 +126,21 @@ const seedData = async () => {
     const showtimesToInsert = [];
 
     createdMovies.forEach((movie, movieIndex) => {
-      // Create showtimes across several upcoming days (today, +1 day, +2 days, +3 days)
-      for (let dayOffset = 0; dayOffset <= 6; dayOffset += 2) {
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
         const dateStr = getFutureDate(dayOffset);
-        
-        // Showtime 1 for this day
-        showtimesToInsert.push({
-          movie: movie._id,
-          theater: theaters[movieIndex % theaters.length],
-          date: dateStr,
-          time: timeSlots[dayOffset % timeSlots.length],
-          price: prices[movieIndex % prices.length],
-          totalSeats: 40,
-          bookedSeats: movieIndex === 0 && dayOffset === 0 ? ['A1', 'A2'] : [], // Seed 2 booked seats on 1st movie for demo
-        });
 
-        // Showtime 2 for this day
-        showtimesToInsert.push({
-          movie: movie._id,
-          theater: theaters[(movieIndex + 1) % theaters.length],
-          date: dateStr,
-          time: timeSlots[(dayOffset + 2) % timeSlots.length],
-          price: prices[(movieIndex + 1) % prices.length],
-          totalSeats: 40,
-          bookedSeats: [],
-        });
+        for (let slot = 0; slot < 3; slot++) {
+          showtimesToInsert.push({
+            movie: movie._id, // must be an ObjectId reference, not an embedded object
+            theater: theaters[(movieIndex + slot) % theaters.length],
+            date: dateStr,
+            time: timeSlots[(movieIndex + slot) % timeSlots.length],
+            price: prices[(movieIndex + slot) % prices.length],
+            totalSeats: 40,
+            // Seed 2 booked seats on the first showtime for demo purposes
+            bookedSeats: movieIndex === 0 && dayOffset === 0 && slot === 0 ? ['A1', 'A2'] : [],
+          });
+        }
       }
     });
 
